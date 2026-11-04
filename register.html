@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card card-bb auth-card"><div class="card-body p-4">
+    <h1 class="h3 text-center mb-1">Create your account</h1>
+    <p class="text-center text-muted">Join Book Bridge as a donor or a student</p>
+    <form method="post" class="needs-validation" novalidate>
+      {{ csrf() }}
+      <div class="mb-3">
+        <label class="form-label d-block">I want to</label>
+        <div class="btn-group w-100" role="group">
+          <input type="radio" class="btn-check" name="role" id="role_student" value="student" {{ 'checked' if form.get('role', 'student') == 'student' }} required>
+          <label class="btn btn-outline-primary" for="role_student"><i class="bi bi-backpack2"></i> Receive books (Student)</label>
+          <input type="radio" class="btn-check" name="role" id="role_donor" value="donor" {{ 'checked' if form.get('role') == 'donor' }}>
+          <label class="btn btn-outline-success" for="role_donor"><i class="bi bi-gift"></i> Donate books (Donor)</label>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="name" class="form-label">Full name</label>
+        <input type="text" class="form-control" id="name" name="name" minlength="2" maxlength="100" required value="{{ form.get('name', '') }}">
+        <div class="invalid-feedback">Please enter your full name.</div>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" required value="{{ form.get('email', '') }}">
+        <div class="invalid-feedback">Please enter a valid email.</div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6 mb-3">
+          <label for="phone" class="form-label">Phone <small class="text-muted">(optional)</small></label>
+          <input type="tel" class="form-control" id="phone" name="phone" pattern="[0-9+\- ]{7,15}" value="{{ form.get('phone', '') }}">
+          <div class="invalid-feedback">Digits only, 7-15 characters.</div>
+        </div>
+        <div class="col-sm-6 mb-3">
+          <label for="city" class="form-label">City <small class="text-muted">(optional)</small></label>
+          <input type="text" class="form-control" id="city" name="city" maxlength="60" value="{{ form.get('city', '') }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" minlength="8" required autocomplete="new-password">
+        <div class="form-text">At least 8 characters, with letters and numbers.</div>
+        <div class="invalid-feedback">Password must be at least 8 characters.</div>
+      </div>
+      <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm password</label>
+        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password">
+        <div class="invalid-feedback">Passwords must match.</div>
+      </div>
+      <button class="btn btn-bb w-100" type="submit">Register</button>
+    </form>
+    <p class="text-center mt-3 mb-0">Already registered? <a href="{{ url_for('login') }}">Login</a></p>
+  </div></div>
+</div>
+{% endblock %}

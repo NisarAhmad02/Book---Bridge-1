@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_macros.html" import book_card %}
+{% block title %}Find Books{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="section-title"><h1 class="h2">Find Books</h1><p>All books are <strong>free</strong> for students in need.</p></div>
+
+  <form method="get" class="card card-bb mb-4"><div class="card-body">
+    <div class="row g-2">
+      <div class="col-md-4"><input type="search" class="form-control" name="q" value="{{ q }}" placeholder="Search by title or author" aria-label="Search"></div>
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select" name="category" aria-label="Category">
+          <option value="">All categories</option>
+          {% for c in all_categories %}<option value="{{ c.name }}" {{ 'selected' if c.name == sel_category }}>{{ c.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select" name="level" aria-label="Education level">
+          <option value="">All education levels</option>
+          {% for l in levels %}<option {{ 'selected' if l == sel_level }}>{{ l }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-grid d-md-flex gap-2">
+        <button class="btn btn-dark-bb flex-fill" type="submit"><i class="bi bi-search"></i> Search</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('books') }}" title="Clear filters"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </div>
+  </div></form>
+
+  <p class="text-muted">{{ books|length }} book{{ '' if books|length == 1 else 's' }} found</p>
+  {% if books %}
+  <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-lg-4">
+    {% for b in books %}<div class="col">{{ book_card(b) }}</div>{% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5"><i class="bi bi-emoji-neutral display-3 text-muted"></i><p class="mt-2">No books match your search. Try different words or clear the filters.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

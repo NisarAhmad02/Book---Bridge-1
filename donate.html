@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Donate Books{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="section-title"><h1 class="h2">Donate a Book</h1><p>Your book will help a student. Donations are reviewed by an administrator before they are listed.</p></div>
+
+  {% if not current_user.is_authenticated %}
+  <div class="card card-bb mx-auto" style="max-width:560px"><div class="card-body text-center p-4">
+    <i class="bi bi-gift display-4 text-success"></i>
+    <h2 class="h4 mt-2">Log in as a donor to donate</h2>
+    <p>You need a free donor account so we can track your donations.</p>
+    <a href="{{ url_for('login', next=url_for('donate')) }}" class="btn btn-dark-bb">Login</a>
+    <a href="{{ url_for('register') }}" class="btn btn-bb">Register as donor</a>
+  </div></div>
+  {% else %}
+  <div class="card card-bb mx-auto" style="max-width:760px"><div class="card-body p-4">
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+      {{ csrf() }}
+      <div class="row">
+        <div class="col-md-7 mb-3">
+          <label for="title" class="form-label">Book title *</label>
+          <input class="form-control" id="title" name="title" required minlength="2" maxlength="150" value="{{ form.get('title', '') }}">
+          <div class="invalid-feedback">Please enter the book title.</div>
+        </div>
+        <div class="col-md-5 mb-3">
+          <label for="author" class="form-label">Author *</label>
+          <input class="form-control" id="author" name="author" required minlength="2" maxlength="100" value="{{ form.get('author', '') }}">
+          <div class="invalid-feedback">Please enter the author.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="category" class="form-label">Category *</label>
+          <select class="form-select" id="category" name="category" required>
+            <option value="">Choose...</option>
+            {% for c in all_categories %}<option value="{{ c.name }}" {{ 'selected' if form.get('category') == c.name }}>{{ c.name }}</option>{% endfor %}
+          </select>
+          <div class="invalid-feedback">Please choose a category.</div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="level" class="form-label">Education level *</label>
+          <select class="form-select" id="level" name="level" required>
+            <option value="">Choose...</option>
+            {% for l in levels %}<option {{ 'selected' if form.get('level') == l }}>{{ l }}</option>{% endfor %}
+          </select>
+          <div class="invalid-feedback">Please choose an education level.</div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label for="condition" class="form-label">Condition *</label>
+        <select class="form-select" id="condition" name="condition" required>
+          <option value="">Choose...</option>
+          {% for c in conditions %}<option {{ 'selected' if form.get('condition') == c }}>{{ c }}</option>{% endfor %}
+        </select>
+        <div class="invalid-feedback">Please choose the condition.</div>
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3" maxlength="1000" placeholder="Edition, year, any marks or missing pages...">{{ form.get('description', '') }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label for="image" class="form-label">Book image <small class="text-muted">(PNG, JPG or WEBP, max 5 MB)</small></label>
+        <input class="form-control" type="file" id="image" name="image" accept="image/png,image/jpeg,image/webp">
+        <div class="text-danger small" id="imageError"></div>
+        <img id="imagePreview" class="d-none mt-2 rounded" style="max-height:180px" alt="Selected image preview">
+      </div>
+      <button class="btn btn-bb w-100" type="submit"><i class="bi bi-send"></i> Submit donation</button>
+    </form>
+  </div></div>
+  {% endif %}
+</div>
+{% endblock %}

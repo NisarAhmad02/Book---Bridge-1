@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}How It Works{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-title"><h1 class="h2">How It Works</h1><p>From a donor's shelf to a student's desk in three steps</p></div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">1</div><h3 class="h4">Donate</h3><p>Donors submit reusable books with title, author, category, education level, condition and a photo.</p><p class="small text-muted mb-0">An administrator checks each donation before it is listed.</p></div></div>
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">2</div><h3 class="h4">Connect</h3><p>Students search and filter the available books and send a free request.</p><p class="small text-muted mb-0">Track the request status from your dashboard.</p></div></div>
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">3</div><h3 class="h4">Distribute</h3><p>Approved books are handed over free of cost and recorded in the distribution records.</p><p class="small text-muted mb-0">Students can then share feedback.</p></div></div>
+    </div>
+    <div class="text-center mt-5">
+      <a href="{{ url_for('donate') }}" class="btn btn-bb btn-lg">Donate Books</a>
+      <a href="{{ url_for('books') }}" class="btn btn-dark-bb btn-lg">Find Books</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

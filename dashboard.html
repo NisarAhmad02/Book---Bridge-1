@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge %}
+{% block title %}{{ 'Donor' if current_user.role == 'donor' else 'Student' }} Dashboard{% endblock %}
+{% block content %}
+<div class="container section">
+  <h1 class="h3 mb-1">Hello, {{ current_user.name }}!</h1>
+  <p class="text-muted">{{ 'Donor' if current_user.role == 'donor' else 'Student' }} dashboard</p>
+
+  {% if current_user.role == 'donor' %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g1"><div class="n">{{ data.total }}</div>Books submitted</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g4"><div class="n">{{ data.pending }}</div>Awaiting approval</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g3"><div class="n">{{ data.available }}</div>Listed for students</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g2"><div class="n">{{ data.distributed }}</div>Given to students</div></div>
+  </div>
+  <div class="d-grid d-sm-flex gap-2 mb-4">
+    <a href="{{ url_for('donate') }}" class="btn btn-bb"><i class="bi bi-plus-circle"></i> Donate a book</a>
+    <a href="{{ url_for('my_donations') }}" class="btn btn-dark-bb"><i class="bi bi-gift"></i> My Donations</a>
+    <a href="{{ url_for('distributions') }}" class="btn btn-outline-secondary"><i class="bi bi-truck"></i> Distribution Records</a>
+  </div>
+  <h2 class="h5">Recent donations</h2>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th>Book</th><th>Category</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for b in recent %}<tr><td>{{ b.title }}<div class="small text-muted">{{ b.author }}</div></td><td>{{ b.category }}</td><td>{{ badge(b.status) }}</td></tr>
+    {% else %}<tr><td colspan="3" class="text-center text-muted py-4">You have not donated any books yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+
+  {% else %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g1"><div class="n">{{ data.total }}</div>Total requests</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g4"><div class="n">{{ data.pending }}</div>Pending</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g3"><div class="n">{{ data.approved }}</div>Approved</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g2"><div class="n">{{ data.received }}</div>Books received</div></div>
+  </div>
+  <div class="d-grid d-sm-flex gap-2 mb-4">
+    <a href="{{ url_for('books') }}" class="btn btn-bb"><i class="bi bi-search"></i> Find books</a>
+    <a href="{{ url_for('my_requests') }}" class="btn btn-dark-bb"><i class="bi bi-inboxes"></i> My Requests</a>
+    <a href="{{ url_for('feedback') }}" class="btn btn-outline-secondary"><i class="bi bi-chat-heart"></i> Give Feedback</a>
+  </div>
+  <h2 class="h5">Recent requests</h2>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th>Book</th><th>Requested</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in recent %}<tr><td>{{ r.title }}<div class="small text-muted">{{ r.author }}</div></td><td>{{ r.requested_at[:10] }}</td><td>{{ badge(r.status) }}</td></tr>
+    {% else %}<tr><td colspan="3" class="text-center text-muted py-4">No requests yet. <a href="{{ url_for('books') }}">Browse books</a>.</td></tr>{% endfor %}
+    </tbody></table></div>
+  {% endif %}
+</div>
+{% endblock %}

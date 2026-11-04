@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_macros.html" import book_card %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <h1>Give Your Books a Second Life.</h1>
+        <p class="lead my-3">Donate books. Share knowledge. Build a better future.</p>
+        <div class="d-grid d-sm-flex gap-2">
+          <a href="{{ url_for('donate') }}" class="btn btn-bb btn-lg"><i class="bi bi-gift"></i> Donate Books</a>
+          <a href="{{ url_for('books') }}" class="btn btn-outline-bb btn-lg"><i class="bi bi-search"></i> Find Books</a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <img src="{{ url_for('static', filename='images/hero.svg') }}" alt="Books forming a bridge between donors and students">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-title"><h2>About Book Bridge</h2></div>
+    <div class="row justify-content-center"><div class="col-lg-8 text-center">
+      <p class="fs-5">Many students cannot afford the textbooks they need, while many homes have good books lying unused.
+        <strong>Book Bridge</strong> connects the two: donors give reusable books, and students receive them
+        <strong>completely free of cost</strong>. Less expense for students, more knowledge shared for everyone.</p>
+      <a href="{{ url_for('about') }}" class="btn btn-dark-bb">Learn more</a>
+    </div></div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-title"><h2>How It Works</h2><p>Three simple steps</p></div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">1</div><h4>Donate</h4><p class="mb-0">Donors submit reusable books.</p></div></div>
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">2</div><h4>Connect</h4><p class="mb-0">Students search and request available books.</p></div></div>
+      <div class="col-md-4"><div class="card card-bb p-4"><div class="step-num">3</div><h4>Distribute</h4><p class="mb-0">Approved books are distributed free of cost.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-title"><h2>Book Categories</h2><p>Browse books by category</p></div>
+    <div class="row g-3">
+      {% for c in all_categories %}
+      <div class="col-6 col-md-4 col-lg">
+        <a class="cat-card" href="{{ url_for('books', category=c.name) }}">
+          <i class="bi {{ c.icon }}"></i><strong class="d-block small">{{ c.name }}</strong>
+          <small>{{ counts.get(c.id, 0) }} available</small>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if latest %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-title"><h2>Recently Added Books</h2></div>
+    <div class="row g-3 row-cols-2 row-cols-lg-4">
+      {% for b in latest %}<div class="col">{{ book_card(b) }}</div>{% endfor %}
+    </div>
+    <div class="text-center mt-4"><a href="{{ url_for('books') }}" class="btn btn-dark-bb">See all books</a></div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section stats">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-6 col-md-3"><div class="stat-num">{{ stats.books_donated }}</div><div class="stat-label">Books Donated</div></div>
+      <div class="col-6 col-md-3"><div class="stat-num">{{ stats.books_distributed }}</div><div class="stat-label">Books Distributed</div></div>
+      <div class="col-6 col-md-3"><div class="stat-num">{{ stats.students_helped }}</div><div class="stat-label">Students Helped</div></div>
+      <div class="col-6 col-md-3"><div class="stat-num">{{ stats.donors }}</div><div class="stat-label">Registered Donors</div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

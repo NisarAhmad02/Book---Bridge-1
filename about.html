@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-title"><h1 class="h2">About Us</h1></div>
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <h3>Our mission</h3>
+        <p>Book Bridge is a college <strong>Community Service Project (CSP)</strong>. We collect reusable books from donors and distribute them <strong>free of cost</strong> to students in need, reducing educational expenses and promoting knowledge sharing.</p>
+        <h3>Our values</h3>
+        <ul>
+          <li><strong>Free for everyone</strong> - no payments, ever.</li>
+          <li><strong>Reuse</strong> - every book deserves a second life.</li>
+          <li><strong>Fairness</strong> - requests are reviewed by administrators.</li>
+          <li><strong>Community</strong> - students, donors and volunteers working together.</li>
+        </ul>
+      </div>
+      <div class="col-lg-6 text-center"><img class="img-fluid" src="{{ url_for('static', filename='images/hero.svg') }}" alt="Book Bridge illustration"></div>
+    </div>
+  </div>
+</section>
+<section class="section section-alt">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-6 col-md-3"><div class="card card-bb p-3"><div class="h2 mb-0 text-success">{{ stats.books_donated }}</div>Books shared</div></div>
+      <div class="col-6 col-md-3"><div class="card card-bb p-3"><div class="h2 mb-0 text-success">{{ stats.books_distributed }}</div>Books distributed</div></div>
+      <div class="col-6 col-md-3"><div class="card card-bb p-3"><div class="h2 mb-0 text-success">{{ stats.donors }}</div>Donors</div></div>
+      <div class="col-6 col-md-3"><div class="card card-bb p-3"><div class="h2 mb-0 text-success">{{ stats.students }}</div>Students</div></div>
+    </div>
+    <div class="text-center mt-4">
+      <a class="btn btn-bb" href="{{ url_for('register') }}">Join Book Bridge</a>
+      <a class="btn btn-dark-bb" href="{{ url_for('contact') }}">Contact us</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

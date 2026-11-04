@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Distribution Records{% endblock %}
+{% block content %}
+<div class="container section">
+  <h1 class="h3 mb-3">Distribution Records</h1>
+
+  {% if current_user.role == 'admin' %}
+  <h2 class="h5">Approved requests waiting for hand-over</h2>
+  <div class="table-responsive card card-bb mb-4"><table class="table align-middle mb-0">
+    <thead><tr><th>Book</th><th>Student</th><th>Hand-over method</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+    {% for r in ready %}
+    <tr>
+      <td>{{ r.title }}<div class="small text-muted">{{ r.author }}</div></td>
+      <td>{{ r.student_name }}</td>
+      <td>
+        <select name="method" form="dist{{ r.id }}" class="form-select form-select-sm" required aria-label="Method">
+          <option value="Hand-over at college">Hand-over at college</option>
+          <option value="Collected by student">Collected by student</option>
+          <option value="Delivered by volunteer">Delivered by volunteer</option>
+          <option value="Sent by post/courier">Sent by post/courier</option>
+        </select></td>
+      <td><input name="notes" form="dist{{ r.id }}" class="form-control form-control-sm" maxlength="300" placeholder="Optional" aria-label="Notes"></td>
+      <td>
+        <form id="dist{{ r.id }}" method="post" action="{{ url_for('admin_record_distribution', req_id=r.id) }}">
+          {{ csrf() }}<button class="btn btn-sm btn-bb" type="submit">Record</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="5" class="text-center text-muted py-3">No approved requests are waiting.</td></tr>{% endfor %}
+    </tbody></table></div>
+  {% endif %}
+
+  <h2 class="h5">{{ 'All distributions' if current_user.role == 'admin' else ('Books I received' if current_user.role == 'student' else 'My books given to students') }}</h2>
+  <div class="d-flex justify-content-end mb-2">
+    {% if current_user.role == 'admin' %}<a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin_export_csv') }}"><i class="bi bi-download"></i> Export CSV</a>{% endif %}
+  </div>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th>#</th><th>Date</th><th>Book</th>
+      {% if current_user.role != 'student' %}<th>Student</th>{% endif %}
+      {% if current_user.role != 'donor' %}<th>Donor</th>{% endif %}
+      <th>Method</th><th>Notes</th></tr></thead>
+    <tbody>
+    {% for d in records %}
+    <tr><td>{{ d.id }}</td><td>{{ d.distributed_at[:10] }}</td><td>{{ d.title }}<div class="small text-muted">{{ d.author }}</div></td>
+      {% if current_user.role != 'student' %}<td>{{ d.student_name }}</td>{% endif %}
+      {% if current_user.role != 'donor' %}<td>{{ d.donor_name }}</td>{% endif %}
+      <td>{{ d.method }}</td><td class="small">{{ d.notes or '-' }}</td></tr>
+    {% else %}<tr><td colspan="7" class="text-center text-muted py-4">No distribution records yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endblock %}

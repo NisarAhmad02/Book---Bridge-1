@@ -1,0 +1,30 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro badge(status) %}<span class="badge status-{{ status }} text-capitalize">{{ status }}</span>{% endmacro %}
+
+{% macro cover(image, cls='cover') %}
+{% if image %}<img src="{{ url_for('static', filename='uploads/' ~ image) }}" class="{{ cls }}" alt="Book cover" loading="lazy">
+{% else %}<div class="cover-placeholder"><i class="bi bi-book"></i></div>{% endif %}
+{% endmacro %}
+
+{% macro thumb(image) %}
+{% if image %}<img src="{{ url_for('static', filename='uploads/' ~ image) }}" class="thumb" alt="Book cover" loading="lazy">
+{% else %}<div class="thumb d-flex align-items-center justify-content-center text-primary"><i class="bi bi-book"></i></div>{% endif %}
+{% endmacro %}
+
+{% macro book_card(b) %}
+<div class="card book-card">
+  {{ cover(b.image) }}
+  <div class="card-body d-flex flex-column">
+    {% if b.is_demo %}<div><span class="badge text-bg-secondary mb-1">Demo record</span></div>{% endif %}
+    <h6 class="card-title mb-1">{{ b.title }}</h6>
+    <p class="small text-muted mb-1">by {{ b.author }}</p>
+    <p class="small mb-2"><span class="badge text-bg-info">{{ b.category }}</span>
+      <span class="badge text-bg-light border">{{ b.condition }}</span></p>
+    <div class="mt-auto d-flex justify-content-between align-items-center">
+      <span class="badge badge-free">FREE</span>
+      <a href="{{ url_for('book_detail', book_id=b.id) }}" class="btn btn-sm btn-dark-bb">View details</a>
+    </div>
+  </div>
+</div>
+{% endmacro %}

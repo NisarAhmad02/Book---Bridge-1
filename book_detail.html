@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge, cover %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<div class="container section">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('books') }}">Find Books</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ book.title }}</li>
+  </ol></nav>
+  <div class="row g-4">
+    <div class="col-md-4 col-lg-3">{{ cover(book.image, 'cover rounded shadow') }}</div>
+    <div class="col-md-8 col-lg-9">
+      {% if book.is_demo %}<span class="badge text-bg-secondary mb-2">Demo record</span>{% endif %}
+      <h1 class="h2">{{ book.title }}</h1>
+      <p class="text-muted fs-5">by {{ book.author }}</p>
+      <table class="table table-sm w-auto">
+        <tr><th class="pe-4">Category</th><td>{{ book.category }}</td></tr>
+        <tr><th>Education level</th><td>{{ book.education_level }}</td></tr>
+        <tr><th>Condition</th><td>{{ book.condition }}</td></tr>
+        <tr><th>Donated by</th><td>{{ book.donor_name }}</td></tr>
+        <tr><th>Status</th><td>{{ badge(book.status) }}</td></tr>
+        <tr><th>Price</th><td><span class="badge badge-free">FREE</span></td></tr>
+      </table>
+      {% if book.description %}<p>{{ book.description }}</p>{% endif %}
+
+      {% if book.status == 'available' %}
+        {% if not current_user.is_authenticated %}
+          <a class="btn btn-bb" href="{{ url_for('login', next=url_for('book_detail', book_id=book.id)) }}">Login as student to request</a>
+        {% elif current_user.role == 'student' %}
+          {% if existing %}
+            <div class="alert alert-info">You already requested this book (status: {{ badge(existing.status) }}).
+              <a href="{{ url_for('my_requests') }}">View my requests</a></div>
+          {% else %}
+          <form method="post" action="{{ url_for('request_book', book_id=book.id) }}" class="card card-bb"><div class="card-body">
+            {{ csrf() }}
+            <label for="reason" class="form-label">Why do you need this book? <small class="text-muted">(optional)</small></label>
+            <textarea class="form-control mb-3" id="reason" name="reason" rows="2" maxlength="500"></textarea>
+            <button class="btn btn-bb" type="submit"><i class="bi bi-hand-index-thumb"></i> Request this book - free</button>
+          </div></form>
+          {% endif %}
+        {% else %}
+          <div class="alert alert-light border">Only student accounts can request books.</div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-warning">This book is currently <strong>{{ book.status }}</strong> and cannot be requested.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Feedback{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <h1 class="h3">Give Feedback</h1>
+      {% if received %}
+      <form method="post" class="card card-bb needs-validation" novalidate><div class="card-body">
+        {{ csrf() }}
+        <div class="mb-3">
+          <label for="book_id" class="form-label">Book you received</label>
+          <select class="form-select" id="book_id" name="book_id" required>
+            <option value="">Choose...</option>
+            {% for b in received %}<option value="{{ b.id }}">{{ b.title }}</option>{% endfor %}
+          </select>
+          <div class="invalid-feedback">Please choose a book.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label d-block">Rating</label>
+          <div class="star-rating">
+            {% for i in [5,4,3,2,1] %}
+            <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" required><label for="star{{ i }}" title="{{ i }} star{{ 's' if i > 1 }}">&#9733;</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="comment" class="form-label">Your comments</label>
+          <textarea class="form-control" id="comment" name="comment" rows="4" minlength="5" maxlength="1000" required></textarea>
+          <div class="invalid-feedback">Please write at least 5 characters.</div>
+        </div>
+        <button class="btn btn-bb" type="submit">Submit feedback</button>
+      </div></form>
+      {% else %}
+      <div class="alert alert-info">You can give feedback once you have received a book. <a href="{{ url_for('books') }}">Find books</a> or check <a href="{{ url_for('my_requests') }}">My Requests</a>.</div>
+      {% endif %}
+    </div>
+    <div class="col-lg-6">
+      <h2 class="h5 mt-lg-5">My previous feedback</h2>
+      {% for f in mine %}
+      <div class="card card-bb mb-2"><div class="card-body py-2">
+        <div class="text-warning">{{ '&#9733;'|safe * f.rating }}<span class="text-muted">{{ '&#9733;'|safe * (5 - f.rating) }}</span></div>
+        <div class="small text-muted">{{ f.title or 'General' }} &middot; {{ f.created_at[:10] }}</div>
+        <div>{{ f.comment }}</div>
+      </div></div>
+      {% else %}<p class="text-muted">No feedback submitted yet.</p>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

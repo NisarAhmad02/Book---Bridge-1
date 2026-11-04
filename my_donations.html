@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, thumb %}
+{% block title %}My Donations{% endblock %}
+{% block content %}
+<div class="container section">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h1 class="h3 mb-0">My Donations</h1>
+    <a href="{{ url_for('donate') }}" class="btn btn-bb btn-sm"><i class="bi bi-plus-circle"></i> Donate another book</a>
+  </div>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th></th><th>Book</th><th>Category</th><th>Submitted</th><th>Donation status</th><th>Book status</th><th>Admin note</th></tr></thead>
+    <tbody>
+    {% for d in donations %}
+    <tr>
+      <td>{{ thumb(d.image) }}</td>
+      <td>{{ d.title }}<div class="small text-muted">{{ d.author }}</div></td>
+      <td>{{ d.category }}</td>
+      <td>{{ d.submitted_at[:10] }}</td>
+      <td>{{ badge(d.donation_status) }}</td>
+      <td>{{ badge(d.book_status) }}</td>
+      <td class="small">{{ d.admin_note or '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" class="text-center text-muted py-4">You have not donated any books yet.</td></tr>
+    {% endfor %}
+    </tbody></table></div>
+</div>
+{% endblock %}

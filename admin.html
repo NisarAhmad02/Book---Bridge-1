@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, badge, thumb %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<div class="container section">
+  <h1 class="h3 mb-3"><i class="bi bi-shield-lock text-success"></i> Administrator</h1>
+  <ul class="nav nav-pills admin-nav flex-nowrap overflow-auto mb-4 pb-1">
+    {% for key, label, ep, icon in [
+      ('dashboard','Dashboard','admin_dashboard','bi-speedometer2'),
+      ('users','Users','admin_users','bi-people'),
+      ('donations','Donations','admin_donations','bi-gift'),
+      ('requests','Requests','admin_requests','bi-inboxes'),
+      ('distributions','Distributions','distributions','bi-truck'),
+      ('feedback','Feedback','admin_feedback','bi-chat-heart'),
+      ('messages','Messages','admin_messages','bi-envelope'),
+      ('reports','Reports','admin_reports','bi-bar-chart')] %}
+    <li class="nav-item"><a class="nav-link text-nowrap {{ 'active' if section == key }}" href="{{ url_for(ep) }}"><i class="bi {{ icon }}"></i> {{ label }}</a></li>
+    {% endfor %}
+  </ul>
+
+  {% if section == 'dashboard' %}
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g1"><div class="n">{{ stats.donors }}</div>Donors</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g3"><div class="n">{{ stats.students }}</div>Students</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g2"><div class="n">{{ stats.books_available }}</div>Books available</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g2"><div class="n">{{ stats.books_distributed }}</div>Books distributed</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g4"><div class="n">{{ stats.pending_donations }}</div><a class="text-white" href="{{ url_for('admin_donations', status='pending') }}">Donations to review</a></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g4"><div class="n">{{ stats.pending_requests }}</div><a class="text-white" href="{{ url_for('admin_requests', status='pending') }}">Requests to review</a></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g1"><div class="n">{{ stats.approved_waiting }}</div><a class="text-white" href="{{ url_for('distributions') }}">Awaiting hand-over</a></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g3"><div class="n">{{ stats.unread }}</div><a class="text-white" href="{{ url_for('admin_messages') }}">Unread messages</a></div></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-6"><h2 class="h5">Latest donations</h2>
+      <div class="table-responsive card card-bb"><table class="table mb-0 align-middle"><tbody>
+      {% for d in recent_donations %}<tr><td>{{ d.title }}<div class="small text-muted">by {{ d.donor_name }}</div></td><td class="text-end">{{ badge(d.status) }}</td></tr>
+      {% else %}<tr><td class="text-muted text-center py-3">No donations yet.</td></tr>{% endfor %}</tbody></table></div></div>
+    <div class="col-lg-6"><h2 class="h5">Latest requests</h2>
+      <div class="table-responsive card card-bb"><table class="table mb-0 align-middle"><tbody>
+      {% for r in recent_requests %}<tr><td>{{ r.title }}<div class="small text-muted">by {{ r.student_name }}</div></td><td class="text-end">{{ badge(r.status) }}</td></tr>
+      {% else %}<tr><td class="text-muted text-center py-3">No requests yet.</td></tr>{% endfor %}</tbody></table></div></div>
+  </div>
+
+  {% elif section == 'users' %}
+  <div class="btn-group mb-3" role="group" aria-label="Filter users">
+    <a class="btn btn-sm btn-outline-primary {{ 'active' if not role }}" href="{{ url_for('admin_users') }}">All</a>
+    <a class="btn btn-sm btn-outline-primary {{ 'active' if role == 'donor' }}" href="{{ url_for('admin_users', role='donor') }}">Donors</a>
+    <a class="btn btn-sm btn-outline-primary {{ 'active' if role == 'student' }}" href="{{ url_for('admin_users', role='student') }}">Students</a>
+  </div>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>City</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody>
+    {% for u in users %}<tr>
+      <td>{{ u.name }}{% if u.is_demo %} <span class="badge text-bg-secondary">demo</span>{% endif %}</td>
+      <td class="small">{{ u.email }}</td><td class="text-capitalize">{{ u.role }}</td><td>{{ u.city or '-' }}</td><td>{{ u.created_at[:10] }}</td>
+      <td>{% if u.is_active %}<span class="badge status-approved">Active</span>{% else %}<span class="badge status-rejected">Disabled</span>{% endif %}</td>
+      <td class="text-end">{% if u.role != 'admin' %}
+        <form method="post" action="{{ url_for('admin_toggle_user', user_id=u.id) }}" data-confirm="{{ 'Deactivate' if u.is_active else 'Activate' }} this account?">{{ csrf() }}
+          <button class="btn btn-sm {{ 'btn-outline-danger' if u.is_active else 'btn-outline-success' }}">{{ 'Deactivate' if u.is_active else 'Activate' }}</button></form>{% endif %}</td>
+    </tr>{% endfor %}</tbody></table></div>
+
+  {% elif section == 'donations' %}
+  <div class="btn-group mb-3" role="group">
+    {% for s in ['', 'pending', 'approved', 'rejected'] %}
+    <a class="btn btn-sm btn-outline-primary {{ 'active' if status == s }}" href="{{ url_for('admin_donations', status=s) if s else url_for('admin_donations') }}">{{ s.title() or 'All' }}</a>
+    {% endfor %}
+  </div>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th></th><th>Book</th><th>Details</th><th>Donor</th><th>Status</th><th style="min-width:230px">Decision</th></tr></thead><tbody>
+    {% for d in donations %}<tr>
+      <td>{{ thumb(d.image) }}</td>
+      <td>{{ d.title }}<div class="small text-muted">{{ d.author }}</div></td>
+      <td class="small">{{ d.category }}<br>{{ d.education_level }}<br>{{ d.condition }}</td>
+      <td class="small">{{ d.donor_name }}<br>{{ d.donor_email }}</td>
+      <td>{{ badge(d.status) }}<div class="small text-muted">{{ d.admin_note or '' }}</div></td>
+      <td>{% if d.status == 'pending' %}
+        <form method="post" action="{{ url_for('admin_donation_decision', donation_id=d.id) }}">{{ csrf() }}
+          <input name="admin_note" class="form-control form-control-sm mb-1" maxlength="300" placeholder="Note (optional)" aria-label="Note">
+          <button name="action" value="approve" class="btn btn-sm btn-bb">Approve</button>
+          <button name="action" value="reject" class="btn btn-sm btn-outline-danger">Reject</button></form>
+        {% else %}<span class="text-muted small">Reviewed {{ (d.reviewed_at or '')[:10] }}</span>{% endif %}</td>
+    </tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-4">No donations found.</td></tr>{% endfor %}</tbody></table></div>
+
+  {% elif section == 'requests' %}
+  <div class="btn-group mb-3 flex-wrap" role="group">
+    {% for s in ['', 'pending', 'approved', 'distributed', 'rejected', 'cancelled'] %}
+    <a class="btn btn-sm btn-outline-primary {{ 'active' if status == s }}" href="{{ url_for('admin_requests', status=s) if s else url_for('admin_requests') }}">{{ s.title() or 'All' }}</a>
+    {% endfor %}
+  </div>
+  <div class="table-responsive card card-bb"><table class="table align-middle mb-0">
+    <thead><tr><th>Book</th><th>Student</th><th>Reason</th><th>Status</th><th style="min-width:230px">Decision</th></tr></thead><tbody>
+    {% for r in reqs %}<tr>
+      <td>{{ r.title }}<div class="small text-muted">{{ r.author }} &middot; {{ r.requested_at[:10] }}</div></td>
+      <td class="small">{{ r.student_name }}<br>{{ r.student_email }}{% if r.student_phone %}<br>{{ r.student_phone }}{% endif %}</td>
+      <td class="small">{{ r.reason or '-' }}</td>
+      <td>{{ badge(r.status) }}<div class="small text-muted">{{ r.admin_note or '' }}</div></td>
+      <td>{% if r.status == 'pending' %}
+        <form method="post" action="{{ url_for('admin_request_decision', req_id=r.id) }}">{{ csrf() }}
+          <input name="admin_note" class="form-control form-control-sm mb-1" maxlength="300" placeholder="Note (optional)" aria-label="Note">
+          <button name="action" value="approve" class="btn btn-sm btn-bb">Approve</button>
+          <button name="action" value="reject" class="btn btn-sm btn-outline-danger">Reject</button></form>
+        {% elif r.status == 'approved' %}<a class="btn btn-sm btn-dark-bb" href="{{ url_for('distributions') }}">Record hand-over</a>
+        {% else %}<span class="text-muted small">-</span>{% endif %}</td>
+    </tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">No requests found.</td></tr>{% endfor %}</tbody></table></div>
+
+  {% elif section == 'feedback' %}
+  <p class="text-muted">{{ items|length }} feedback entr{{ 'y' if items|length == 1 else 'ies' }}{% if avg %} &middot; average rating <strong>{{ avg }}/5</strong>{% endif %}</p>
+  <div class="row g-3">
+    {% for f in items %}<div class="col-md-6"><div class="card card-bb"><div class="card-body">
+      <div class="text-warning">{{ '&#9733;'|safe * f.rating }}<span class="text-muted">{{ '&#9733;'|safe * (5 - f.rating) }}</span></div>
+      <p class="mb-1">{{ f.comment }}</p>
+      <div class="small text-muted">{{ f.student_name }} &middot; {{ f.title or 'General' }} &middot; {{ f.created_at[:10] }}</div>
+    </div></div></div>{% else %}<p class="text-muted">No feedback yet.</p>{% endfor %}
+  </div>
+
+  {% elif section == 'messages' %}
+  {% for m in items %}
+  <div class="card card-bb mb-2"><div class="card-body">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <strong>{{ m.subject }}</strong>{% if not m.is_read %}<span class="badge bg-warning text-dark">New</span>{% endif %}
+    </div>
+    <div class="small text-muted mb-2">{{ m.name }} &lt;{{ m.email }}&gt; &middot; {{ m.created_at }}</div>
+    <p class="mb-2" style="white-space:pre-wrap">{{ m.message }}</p>
+    {% if not m.is_read %}<form method="post" action="{{ url_for('admin_mark_read', msg_id=m.id) }}">{{ csrf() }}<button class="btn btn-sm btn-outline-secondary">Mark as read</button></form>{% endif %}
+  </div></div>
+  {% else %}<p class="text-muted">No messages yet.</p>{% endfor %}
+
+  {% elif section == 'reports' %}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="h5 mb-0">Summary report</h2>
+    <a class="btn btn-sm btn-bb" href="{{ url_for('admin_export_csv') }}"><i class="bi bi-download"></i> Download distributions (CSV)</a>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g1"><div class="n">{{ stats.books_donated }}</div>Books donated (approved)</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g2"><div class="n">{{ stats.books_distributed }}</div>Books distributed</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g3"><div class="n">{{ stats.students_helped }}</div>Students helped</div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card bg-g4"><div class="n">{{ stats.donors }}</div>Donors</div></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-7"><h3 class="h6">Books by category</h3>
+      <div class="table-responsive card card-bb"><table class="table table-sm mb-0"><thead><tr><th>Category</th><th class="text-end">Donated</th><th class="text-end">Distributed</th></tr></thead><tbody>
+      {% for c in by_category %}<tr><td>{{ c.name }}</td><td class="text-end">{{ c.donated }}</td><td class="text-end">{{ c.distributed or 0 }}</td></tr>{% endfor %}</tbody></table></div></div>
+    <div class="col-lg-5">
+      <h3 class="h6">Books by status</h3>
+      <div class="table-responsive card card-bb mb-3"><table class="table table-sm mb-0"><tbody>
+      {% for s in by_status %}<tr><td>{{ badge(s.status) }}</td><td class="text-end">{{ s.n }}</td></tr>{% endfor %}</tbody></table></div>
+      <h3 class="h6">Distributions per month</h3>
+      <div class="table-responsive card card-bb mb-3"><table class="table table-sm mb-0"><tbody>
+      {% for m in monthly %}<tr><td>{{ m.month }}</td><td class="text-end">{{ m.n }}</td></tr>{% else %}<tr><td class="text-muted">No data yet.</td></tr>{% endfor %}</tbody></table></div>
+      <h3 class="h6">Top donors</h3>
+      <div class="table-responsive card card-bb"><table class="table table-sm mb-0"><tbody>
+      {% for d in top_donors %}<tr><td>{{ d.name }}</td><td class="text-end">{{ d.n }} book{{ '' if d.n == 1 else 's' }}</td></tr>{% else %}<tr><td class="text-muted">No data yet.</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
